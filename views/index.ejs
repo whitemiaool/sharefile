@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<style>
+	*{
+		margin: 0px;
+		padding: 0px;
+	}
+	a {
+		text-decoration: none;
+	}
+
+	#file-wrap{
+		padding: 10px 20px;
+		border: 1px solid #ccc;
+		margin: 10px;
+	}
+
+	.one {
+		margin: 15px 0px;
+		cursor: pointer;
+	}
+	.file {
+		color: #b72a2a;
+    	text-decoration: underline;
+	}
+
+	.dir {
+		color: #0074ef;
+	}
+</style>
+<body>
+	<div id="file-wrap">
+		
+	</div>
+	<div id="file-content">
+
+	</div>
+<script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+</body>
+<script>	
+	var curPath = window.location.pathname.replace('/read','')
+	eventInit()
+	getFile(curPath);
+	console.log(window.location.pathname)
+	function renderHtml(res) {
+		let html = '';
+		if(res.type == 1) {
+			res.file&&res.file.map((v,i)=>{
+				html+= `<div class="one"><span data-file='${v.path}/${v.name}' data-type='${v.type}'  class="lo ${v.type==1?'dir':'file'}">${v.name}</span></div>`;
+			})
+			$('#file-wrap').html(html);
+		} else if(res.type == 2) {
+			html =`<div>内容:<div>${res.file}</div></div>` ;
+			$('#file-content').html(html);
+		}
+	}
+	function eventInit() {
+		$('#file-wrap').on('click','.lo',(e)=>{
+			let path = $(e.target).data('file');
+			let type = $(e.target).data('type')
+			console.log(window.location.host+'/read'+path)
+			if(type == 1) {
+				window.location.href = `//${window.location.host}/read${path}`;
+			} else {
+				try{ 
+					var elemIF = document.createElement("iframe");   
+					elemIF.src = `//${window.location.host}/down${path}`;   
+					elemIF.style.display = "none";   
+					document.body.appendChild(elemIF);   
+				}catch(e){ 
+				} 
+				window.location.href = `//${window.location.host}/read${path}`;
+			}
+			// getFile(path);
+		})
+	}
+	function getFile(path) {
+		$.ajax({
+			type:'GET',
+			url:`/getFile${path}`
+		}).then((res)=>{
+			renderHtml(res)
+		})
+	}
+</script>
+</html>
